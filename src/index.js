@@ -9,6 +9,12 @@ app.use(express.json())
 //Configuração de Cors
 app.use(cors({credentials: true, origin: 'http://localhost:3000'}))
 
+//Importando Models
+const viagemAprovada = require('./models/ViagemAprovada')
+const viagemPendente = require('./models/ViagemPendente')
+const viagemReprovada = require('./models/ViagemReprovada')
+const usuario = require('./models/Usuario')
+
 //Configuração da porta onde vai rodar o BackEnd
 db.sync()
 .then(()=>{
