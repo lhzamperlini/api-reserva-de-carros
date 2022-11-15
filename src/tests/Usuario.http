@@ -3,7 +3,7 @@ POST http://localhost:3000/usuario/registrar
 Content-Type: application/json
 
 {
-    "login": "lhzamperlini",
+    "login": "Teste",
     "senha": "senhateste",
     "confirmaçãoDeSenha": "senhateste"
 }

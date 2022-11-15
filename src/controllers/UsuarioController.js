@@ -1,6 +1,6 @@
 const Usuario = require('../models/Usuario')
 const bcrypt = require('bcrypt')
-const { username } = require('../config/database')
+const criarTokenDeUsuario = require('../helpers/criar-token-de-usuario')
 
 module.exports = class UsuarioController {
     static async registrar(req, res){
@@ -26,7 +26,7 @@ module.exports = class UsuarioController {
             }
         
         //Checar se usuario existe
-            const usuarioExistente = await Usuario.findOne( { login:login } )
+            const usuarioExistente = await Usuario.findOne( {where: { login:login }} )
             if(usuarioExistente){
                 res.status(422).json({
                      message: 'O usuario já existe, por favor use outro login.' 
@@ -43,13 +43,8 @@ module.exports = class UsuarioController {
             senha: senhaCriptografada
         }
         try{
-            await Usuario.create(usuario)
-            .then((usuario)=>{
-                res.status(201).json({
-                    message: 'Usuario Criado com sucesso.',
-                    usuario
-                })
-            })
+            const usuarioCriado = await Usuario.create(usuario)
+            await criarTokenDeUsuario(usuarioCriado, req, res)
         }
         catch(error){
             res.status(500).json({message: error})
