@@ -1,6 +1,8 @@
 const Usuario = require('../models/Usuario')
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
 const criarTokenDeUsuario = require('../helpers/criar-token-de-usuario')
+const pegarToken = require('../helpers/pegar-token')
 
 module.exports = class UsuarioController {
     static async registrar(req, res){
@@ -90,6 +92,21 @@ module.exports = class UsuarioController {
             catch(error){
                 res.status(500).json({message: error})
             }  
+    }
+
+
+    static async checarUsuarioLogado(req, res){
+        let usuarioAtual
+        if(req.headers.authorization){
+            const token = pegarToken(req)
+            const decodificado = jwt.verify(token, "nossoSegredo")
+
+            usuarioAtual = await Usuario.findOne({where: {id: decodificado.id}})
+        }
+        else{
+            usuarioAtual = null
+        }
+        res.status(200).send(usuarioAtual)
     }
 
 }
