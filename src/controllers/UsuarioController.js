@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const criarTokenDeUsuario = require('../helpers/criar-token-de-usuario')
 const pegarToken = require('../helpers/pegar-token')
+const pegarUsuarioPorToken = require('../helpers/pegar-usuario-p elo-token')
 
 module.exports = class UsuarioController {
     static async registrar(req, res){
@@ -107,6 +108,59 @@ module.exports = class UsuarioController {
             usuarioAtual = null
         }
         res.status(200).send(usuarioAtual)
+    }
+
+    static async pegarUsuarioPorId(req, res){
+        const id = req.params.id
+        const usuario = await Usuario.findOne({where:{id: id}})
+
+        if(!usuario){
+            res.status(422).json({
+                message: 'Usuario não encontrado.'
+            })
+            return
+        }
+        usuario.senha = null
+        res.status(200).json({ usuario })
+    }
+
+    static async editarUsuario(req, res){
+        const id = req.params.id
+        const { login, senha, confirmaçãoDeSenha} = req.body
+
+        //Validação de dados
+            if(!login){
+                res.status(422).json( { message: 'O campo login é obrigatorio' } )
+                return
+            }
+            else if(!senha){
+                res.status(422).json( { message: 'O campo senha é obrigatorio' } )
+                return
+            }
+            else if(!confirmaçãoDeSenha){
+                res.status(422).json( { message: 'O campo confirmação de senha é obrigatorio'} )
+                return
+            }
+
+            if(senha != confirmaçãoDeSenha){
+                res.status(422).json( { message: 'As senhas não coincidem' } )
+                return
+            }
+
+        const token = pegarToken(req)
+        const usuarioToken = pegarUsuarioPorToken(token)
+        const usuario = await Usuario.findOne({where:{id: id}})
+        if(!usuario){
+            res.status(422).json({
+                message: 'Usuario não encontrado.'
+            })
+            return
+        }
+
+
+        res.status(200).json({
+            message: 'Usuario Atualizado!'
+        })
     }
 
 }

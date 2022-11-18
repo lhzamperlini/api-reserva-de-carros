@@ -16,3 +16,7 @@ Content-Type: application/json
     "login": "Teste",
     "senha": "senhateste"
 }
+
+### Pegar Usuario pelo ID
+
+GET http://localhost:3000/usuario/1
