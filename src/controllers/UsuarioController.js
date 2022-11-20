@@ -1,9 +1,9 @@
 const Usuario = require('../models/Usuario')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const criarTokenDeUsuario = require('../helpers/criar-token-de-usuario')
-const pegarToken = require('../helpers/pegar-token')
-const pegarUsuarioPorToken = require('../helpers/pegar-usuario-p elo-token')
+const criarTokenDeUsuario = require('../helpers/token/criar-token-de-usuario')
+const pegarToken = require('../helpers/token/pegar-token')
+const pegarUsuarioPorToken = require('../helpers/token/pegar-usuario-pelo-token')
 
 module.exports = class UsuarioController {
     static async registrar(req, res){
@@ -125,42 +125,59 @@ module.exports = class UsuarioController {
     }
 
     static async editarUsuario(req, res){
-        const id = req.params.id
-        const { login, senha, confirmaçãoDeSenha} = req.body
-
-        //Validação de dados
-            if(!login){
-                res.status(422).json( { message: 'O campo login é obrigatorio' } )
-                return
-            }
-            else if(!senha){
-                res.status(422).json( { message: 'O campo senha é obrigatorio' } )
-                return
-            }
-            else if(!confirmaçãoDeSenha){
-                res.status(422).json( { message: 'O campo confirmação de senha é obrigatorio'} )
-                return
-            }
-
-            if(senha != confirmaçãoDeSenha){
-                res.status(422).json( { message: 'As senhas não coincidem' } )
-                return
-            }
-
+        const { login, senha, confirmacaoDeSenha} = req.body
         const token = pegarToken(req)
-        const usuarioToken = pegarUsuarioPorToken(token)
-        const usuario = await Usuario.findOne({where:{id: id}})
-        if(!usuario){
-            res.status(422).json({
-                message: 'Usuario não encontrado.'
-            })
-            return
+        const usuarioToken = await pegarUsuarioPorToken(token)
+        const id = usuarioToken.id
+        const usuario = {
+            login: "",
+            senha: ""
         }
+        
+         if(!usuarioToken){
+             res.status(422).json({
+                 message: 'Usuario não encontrado.'
+             })
+             return
+         }
 
-
-        res.status(200).json({
-            message: 'Usuario Atualizado!'
-        })
+         const usuarioExistente = await Usuario.findOne( {where: { login:login }} )
+         if(usuarioExistente){
+         res.status(422).json({
+             message: 'Login de Usuario já existe, por favor  mude o login.' 
+         })
+         return
+     }
+        //Validação de dados
+             if(login){
+                usuario.login = login
+             }
+             if(senha != confirmacaoDeSenha){
+                 res.status(422).json( { message: 'As senhas não coincidem' } )
+                 return
+             }
+             if(senha!=null){
+                 const salt = await bcrypt.genSalt(12)
+                 const senhaCriptografada = await bcrypt.hash(senha, salt)
+                 usuario.senha = senhaCriptografada
+             }
+        
+        //Criando objeto de usuario
+        console.log(usuario)
+          try {
+              Usuario.update(usuario, {where: {id:id}})
+              .then(()=>{
+                  res.status(200).json({
+                      message: 'Usuario Atualizado!'
+                  })
+                  return
+              })
+          } catch (error) {
+              res.status(500).json({
+                  message: 'Deu Merda.',
+                  error: error
+              })
+          }
     }
 
 }
