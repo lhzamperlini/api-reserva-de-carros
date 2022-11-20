@@ -4,37 +4,26 @@ const jwt = require('jsonwebtoken')
 const criarTokenDeUsuario = require('../helpers/token/criar-token-de-usuario')
 const pegarToken = require('../helpers/token/pegar-token')
 const pegarUsuarioPorToken = require('../helpers/token/pegar-usuario-pelo-token')
+const parametroAusente = require('../errors/parametro-ausente')
 
 module.exports = class UsuarioController {
     static async registrar(req, res){
-        const { login, senha, confirmaçãoDeSenha } = req.body
+        const camposRequeridos = ['login', 'senha', 'confirmacaoDeSenha']
+        const { login, senha, confirmacaoDeSenha } = req.body
 
         //Validação de dados
-            if(!login){
-                res.status(422).json( { message: 'O campo login é obrigatorio' } )
-                return
-            }
-            else if(!senha){
-                res.status(422).json( { message: 'O campo senha é obrigatorio' } )
-                return
-            }
-            else if(!confirmaçãoDeSenha){
-                res.status(422).json( { message: 'O campo confirmação de senha é obrigatorio'} )
-                return
-            }
-
-            if(senha != confirmaçãoDeSenha){
-                res.status(422).json( { message: 'As senhas não coincidem' } )
-                return
+            for (const campo of camposRequeridos) {
+                if(!req.body[campo]){
+                 return parametroAusente(res, campo)   
+                }
             }
         
         //Checar se usuario existe
             const usuarioExistente = await Usuario.findOne( {where: { login:login }} )
             if(usuarioExistente){
-                res.status(422).json({
+                return res.status(422).json({
                      message: 'O usuario já existe, por favor use outro login.' 
                 })
-                return
             }
         //Criptografar Senha
         const salt = await bcrypt.genSalt(12)
@@ -55,18 +44,15 @@ module.exports = class UsuarioController {
     }
 
     static async login(req, res){
-        const login = req.body.login
-        const senha = req.body.senha
+        const camposRequeridos = ['login', 'senha', 'confirmacaoDeSenha']
+        const { login, senha } = req.body
 
         //Validação se os campos foram preenchidos corretamente
-            if(!login){
-                res.status(422).json( { message: 'O campo login é obrigatorio' } )
-                return
+        for (const campo of camposRequeridos) {
+            if(!req.body[campo]){
+             return parametroAusente(res, campo)   
             }
-            else if(!senha){
-                res.status(422).json( { message: 'O campo senha é obrigatorio' } )
-                return
-            }        
+        }      
 
         //Checar se usuario existe
             const usuario = await Usuario.findOne( {where: { login:login }} )
