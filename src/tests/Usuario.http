@@ -3,7 +3,7 @@ POST http://localhost:3000/usuario/registrar
 Content-Type: application/json
 
 {
-    "login": "BigBen",
+    "login": "Batata",
     "senha": "senhateste",
     "confirmaçãoDeSenha": "senhateste"
 }
@@ -19,4 +19,4 @@ Content-Type: application/json
 
 ### Pegar Usuario pelo ID
 
-GET http://localhost:3000/usuario/1
+GET http://localhost:3000/usuario/3
