@@ -7,7 +7,7 @@ const app = express()
 app.use(express.json())
 
 //Configuração de Cors
-app.use(cors({credentials: true, origin: 'http://localhost:3000'}))
+app.use(cors({credentials: true, origin: 'http://localhost:4200'}))
 
 //Importando Models - Apenas quando eles são importados as suas respectivas tabelas são criadas
 const viagemAprovada = require('./models/ViagemAprovada')
