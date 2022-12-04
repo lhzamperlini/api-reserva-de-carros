@@ -14,7 +14,6 @@ const verificarToken = (req, res, next)=>{
             message: 'Acesso Negado!'
         })
     }
-    
     try {
         const verificado = jwt.verify(token,'nossoSegredo')
         req.user = verificado

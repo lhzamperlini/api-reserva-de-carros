@@ -2,7 +2,7 @@ const router = require('express').Router()
 const usuarioController = require('../controllers/UsuarioController')
 
 //Middleware
-const verificarToken = require('../helpers/verificar-token')
+const verificarToken = require('../helpers/token/verificar-token')
 
 router.post('/registrar', usuarioController.registrar)
 router.post('/login', usuarioController.login)
